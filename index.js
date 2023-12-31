@@ -7,20 +7,27 @@ const hyperformulaInstance = HyperFormula.buildEmpty({
     licenseKey: 'gpl-v3'
 });
 
+const data = [
+    // Profits Section
+    ['Revenue', 'Expenses', 'Profit', 'Taxes (%)', 'Taxes dues', ''],
+    [0, 0, '=A2-B2', 0.135, '=C2*D2', ''],
+
+    // Space
+    ['','','','','','',''],
+
+    // Capital Gains Section
+    ['Cost', 'Proceeds', 'Capital Gain', 'Tax on Gain (50.17%)', 'CDA', 'RDTOH'],
+    [0, 0, '=(B5-A5)/2', '=(C5*50.17)/100', '=(B5-A5)/2', 0],
+
+    // Space
+    ['','','','','','',''],
+
+  ];
+  
+
 // Initialize Handsontable with HyperFormula
 const hot = new Handsontable(container, {
-    data: [
-        ['', '', '', '','', '', '','', '', ''],
-        ['', '', '', '','', '', '','', '', ''],
-        ['', '', '', '','', '', '','', '', ''],
-        ['', '', '', '','', '', '','', '', ''],
-        ['', '', '', '','', '', '','', '', ''],
-        ['', '', '', '','', '', '','', '', ''],
-        ['', '', '', '','', '', '','', '', ''],
-        ['', '', '', '','', '', '','', '', ''],
-        ['', '', '', '','', '', '','', '', ''],
-        ['', '', '', '','', '', '','', '', ''],
-      ],
+    data: data,
     contextMenu: true,
     customBorders: true,
     rowHeaders: true,
@@ -41,6 +48,7 @@ const exportPlugin = hot.getPlugin('exportFile');
 
 // Event listener for the CSV export button
 button.addEventListener('click', () => {
+
   exportPlugin.downloadFile('csv', {
     bom: false,
     columnDelimiter: ',',
@@ -48,7 +56,7 @@ button.addEventListener('click', () => {
     exportHiddenColumns: true,
     exportHiddenRows: true,
     fileExtension: 'csv',
-    filename: 'Handsontable-CSV-file_[YYYY]-[MM]-[DD]',
+    filename: 'CSV-file_[YYYY]-[MM]-[DD]',
     mimeType: 'text/csv',
     rowDelimiter: '\r\n',
     rowHeaders: true
