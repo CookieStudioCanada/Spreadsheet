@@ -20,20 +20,17 @@
       <button id="addColumnButton">Add Column</button>
       <button id="export-file">Download CSV</button>
       <button id="emailDataButton">Email Data</button>
-      <!--
-      <button id="load" class="button button--primary button--blue">Load data</button>&nbsp;
-      <button id="save" class="button button--primary button--blue">Save data</button>
-      <label>
-        <input type="checkbox" name="autosave" id="autosave"/>
-        Autosave
-      </label>
-      -->
     </div>
 
-    <!-- <output class="console" id="output">Click "Load" to load data from server</output> -->
+    <h5>CSV</h5>
+    <input type="file" id="csvFileInput" accept=".csv" />
+    
+    <h5>Excel</h5>
+    <input type="file" id="excelFileInput" accept=".xlsx" />
 
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hyperformula/dist/hyperformula.full.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <script type="text/javascript" src="index.js"></script>
   </body>
 </html>

@@ -105,3 +105,36 @@ document.getElementById('addRowButton').addEventListener('click', function() {
 document.getElementById('addColumnButton').addEventListener('click', function() {
     addColumn(hot);
 });
+
+// Load data CSV
+
+document.getElementById('csvFileInput').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+        const text = e.target.result;
+        const data = text.split('\n').map(row => row.split(','));
+        hot.loadData(data); // Assuming 'hot' is your Handsontable instance
+    };
+
+    reader.readAsText(file);
+});
+
+// Load data - Excel
+
+document.getElementById('excelFileInput').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+        hot.loadData(json); // Load data into Handsontable
+    };
+
+    reader.readAsArrayBuffer(file);
+});
