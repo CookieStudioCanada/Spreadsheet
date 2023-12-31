@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Handsontable Vanilla Sandbox</title>
+    <meta charset="UTF-8" />
+    
+    <!-- Handsontable CSS from CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.css"/>
+  </head>
+
+  <body>
+
+    <h1>Table</h1>
+    <p style="font-style: italic;">This is my Handsome table</p>
+    <div id="example"></div>
+    
+    <div class="controls">
+      <button id="addRowButton">Add Row</button>
+      <button id="addColumnButton">Add Column</button>
+      <button id="export-file">Download CSV</button>
+      <button id="emailDataButton">Email Data</button>
+      <!--
+      <button id="load" class="button button--primary button--blue">Load data</button>&nbsp;
+      <button id="save" class="button button--primary button--blue">Save data</button>
+      <label>
+        <input type="checkbox" name="autosave" id="autosave"/>
+        Autosave
+      </label>
+      -->
+    </div>
+
+    <!-- <output class="console" id="output">Click "Load" to load data from server</output> -->
+
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hyperformula/dist/hyperformula.full.min.js"></script>
+    <script type="text/javascript" src="index.js"></script>
+  </body>
+</html>
