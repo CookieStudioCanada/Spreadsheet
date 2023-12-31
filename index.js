@@ -138,3 +138,40 @@ document.getElementById('excelFileInput').addEventListener('change', function(ev
 
     reader.readAsArrayBuffer(file);
 });
+
+// Function to open the modal
+function openModal() {
+    var modal = document.getElementById("editModal");
+    var span = document.getElementsByClassName("close")[0];
+
+    // When the user clicks on <span> (x), close the modal
+    span.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+
+    // Get the data from Handsontable and display it in the textarea
+    var data = hot.getData(); // Assume hot is your Handsontable instance
+    document.getElementById("dataTextArea").value = JSON.stringify(data, null, 2);
+
+    // Display the modal
+    modal.style.display = "block";
+}
+
+// Function to save changes from the modal
+document.getElementById("saveButton").addEventListener('click', function() {
+    var updatedData = JSON.parse(document.getElementById("dataTextArea").value);
+    hot.loadData(updatedData); // Update the Handsontable with new data
+    document.getElementById("editModal").style.display = "none"; // Close the modal
+});
+
+// Add a button or a way to open the modal
+document.getElementById("yourButtonId").addEventListener('click', function() {
+    openModal();
+});
