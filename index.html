@@ -27,6 +27,14 @@
     
     <h5>Excel</h5>
     <input type="file" id="excelFileInput" accept=".xlsx" />
+    
+    <div id="editModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <textarea id="dataTextArea"></textarea>
+        <button id="saveButton">Save Changes</button>
+    </div>
+</div>
 
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hyperformula/dist/hyperformula.full.min.js"></script>
