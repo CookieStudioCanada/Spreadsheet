@@ -171,3 +171,4 @@ document.querySelector('#csvFileInput')?.addEventListener('change', async (event
         alert('Failed to load CSV file. Please check the file format.');
     }
 });
+
