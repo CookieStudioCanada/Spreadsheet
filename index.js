@@ -1,18 +1,17 @@
 // Constants and Configuration
 const CONFIG = {
-    CSV_EXPORT: {
-        bom: false,
+    EXPORT_SETTINGS: {
+        bom: true,
         columnDelimiter: ',',
-        columnHeaders: false,
+        columnHeaders: true,
         exportHiddenColumns: true,
         exportHiddenRows: true,
-        fileExtension: 'csv',
-        filename: 'CSV-file_[YYYY]-[MM]-[DD]',
-        mimeType: 'text/csv',
+        filename: 'Spreadsheet_[YYYY]-[MM]-[DD]',
+        mimeType: 'text/csv;charset=utf-8;',
         rowDelimiter: '\r\n',
         rowHeaders: true
     },
-    INITIAL_DATA: Array(16).fill().map(() => Array(10).fill(''))
+    INITIAL_DATA: Array(20).fill().map(() => Array(12).fill(''))
 };
 
 // Initialize HyperFormula
@@ -20,70 +19,15 @@ const hyperformulaInstance = HyperFormula.buildEmpty({
     licenseKey: 'gpl-v3'
 });
 
-// Help modal content
+// Help modal functionality
 const showHelp = () => {
-    alert(`Handsontable Functions Help:
-
-1. Basic Operations:
-   - Click any cell to edit
-   - Use arrow keys to navigate
-   - Press Enter to confirm, Esc to cancel
-   
-2. Formulas (start with =):
-   Basic Math:
-   - Addition: =A1+B1
-   - Subtraction: =A1-B1
-   - Multiplication: =A1*B1
-   - Division: =A1/B1
-   - Power: =POWER(A1,2) or =A1^2
-   - Square Root: =SQRT(A1)
-   
-   Statistical:
-   - Sum: =SUM(A1:A5)
-   - Average: =AVERAGE(A1:A5)
-   - Count: =COUNT(A1:A5)
-   - Maximum: =MAX(A1:A5)
-   - Minimum: =MIN(A1:A5)
-   - Median: =MEDIAN(A1:A5)
-   
-   Logical:
-   - IF: =IF(A1>10,"High","Low")
-   - AND: =AND(A1>10,B1<20)
-   - OR: =OR(A1>10,B1<20)
-   - NOT: =NOT(A1>10)
-   
-   Text:
-   - Concatenate: =CONCATENATE(A1," ",B1)
-   - Left: =LEFT(A1,3)
-   - Right: =RIGHT(A1,3)
-   - Length: =LEN(A1)
-   
-   Date:
-   - Today: =TODAY()
-   - Now: =NOW()
-   - Year: =YEAR(A1)
-   - Month: =MONTH(A1)
-   - Day: =DAY(A1)
-   
-   Lookup:
-   - VLOOKUP: =VLOOKUP(lookup_value,range,col_index)
-   - HLOOKUP: =HLOOKUP(lookup_value,range,row_index)
-   
-3. Features:
-   - Right-click for context menu
-   - Drag column/row borders to resize
-   - Double-click borders for auto-resize
-   
-4. Keyboard Shortcuts:
-   - Ctrl+C: Copy
-   - Ctrl+V: Paste
-   - Ctrl+Z: Undo
-   - Ctrl+Y: Redo`);
+    const helpModal = new bootstrap.Modal(document.getElementById('helpModal'));
+    helpModal.show();
 };
 
 // Initialize Handsontable with improved error handling
 function initializeHandsontable() {
-    const container = document.querySelector('#example');
+    const container = document.querySelector('#table');
     if (!container) {
         console.error('Handsontable container not found');
         return null;
@@ -101,38 +45,120 @@ function initializeHandsontable() {
         manualColumnResize: true,
         colWidths: 100,
         formulas: {
-            engine: hyperformulaInstance
+            engine: hyperformulaInstance,
+            enabled: true,
+            sheetName: 'Sheet1'
         },
         licenseKey: 'non-commercial-and-evaluation',
-        afterChange: (changes) => {
-            if (changes) {
-                console.log('Data changed:', changes);
-            }
+        afterChange: function(changes) {
+            if (!changes) return;
+            
+            changes.forEach(([row, prop, oldValue, newValue]) => {
+                if (newValue && typeof newValue === 'string' && newValue.startsWith('=')) {
+                    // Store formula in cell metadata
+                    this.setCellMeta(row, prop, 'formula', newValue.substring(1));
+                }
+            });
         },
-        afterError: (error) => {
-            console.error('Handsontable error:', error);
+        afterLoadData: function() {
+            this.render(); // Re-render to show calculated values
         }
     });
 }
 
-// CSV file handling
-function handleCSVUpload(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        
-        reader.onerror = () => reject(new Error('File reading failed'));
-        
-        reader.onload = (e) => {
-            try {
-                const text = e.target.result;
-                const data = text.split('\n').map(row => row.split(','));
-                resolve(data);
-            } catch (error) {
-                reject(new Error(`Failed to parse CSV file: ${error.message}`));
-            }
-        };
+// Add this helper function to get cell data with formulas
+function getCellDataWithFormulas(hot) {
+    const data = [];
+    const rows = hot.countRows();
+    const cols = hot.countCols();
 
-        reader.readAsText(file);
+    for (let row = 0; row < rows; row++) {
+        const rowData = [];
+        for (let col = 0; col < cols; col++) {
+            const cellProperties = hot.getCellMeta(row, col);
+            // Get formula if it exists, otherwise get cell value
+            const formula = cellProperties.formula ? '=' + cellProperties.formula : hot.getDataAtCell(row, col);
+            rowData.push(formula);
+        }
+        data.push(rowData);
+    }
+    return data;
+}
+
+// Replace the handleCSVUpload function with this more comprehensive file handler
+function handleFileUpload(file) {
+    return new Promise((resolve, reject) => {
+        const fileExtension = file.name.split('.').pop().toLowerCase();
+        
+        if (fileExtension === 'csv') {
+            const reader = new FileReader();
+            reader.onerror = () => reject(new Error('File reading failed'));
+            reader.onload = (e) => {
+                try {
+                    const text = e.target.result;
+                    const data = text.split('\n')
+                        .map(row => row.trim())
+                        .filter(row => row.length > 0)
+                        .map(row => {
+                            // Parse CSV while preserving formulas
+                            let inQuote = false;
+                            let cells = [];
+                            let currentCell = '';
+                            
+                            for (let char of row) {
+                                if (char === '"') {
+                                    inQuote = !inQuote;
+                                } else if (char === ',' && !inQuote) {
+                                    cells.push(currentCell.trim());
+                                    currentCell = '';
+                                } else {
+                                    currentCell += char;
+                                }
+                            }
+                            cells.push(currentCell.trim());
+                            return cells.map(cell => cell.replace(/(^"|"$)/g, ''));
+                        });
+                    resolve(data);
+                } catch (error) {
+                    reject(new Error(`Failed to parse CSV file: ${error.message}`));
+                }
+            };
+            reader.readAsText(file);
+        } else if (['xlsx', 'xls'].includes(fileExtension)) {
+            const reader = new FileReader();
+            reader.onerror = () => reject(new Error('File reading failed'));
+            reader.onload = (e) => {
+                try {
+                    const data = e.target.result;
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    
+                    // Get both values and formulas
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, { 
+                        header: 1,
+                        raw: false,
+                        defval: ''
+                    });
+                    
+                    // Preserve formulas
+                    for (let R = 0; R < jsonData.length; ++R) {
+                        for (let C = 0; C < jsonData[R].length; ++C) {
+                            const cell = firstSheet[XLSX.utils.encode_cell({r: R, c: C})];
+                            if (cell && cell.f) {
+                                jsonData[R][C] = '=' + cell.f;
+                            }
+                        }
+                    }
+                    
+                    resolve(jsonData);
+                } catch (error) {
+                    reject(new Error(`Failed to parse Excel file: ${error.message}`));
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        } else {
+            reject(new Error('Unsupported file format'));
+        }
     });
 }
 
@@ -144,8 +170,40 @@ if (!hot) {
 
 // Event Listeners
 document.querySelector('#export-file')?.addEventListener('click', () => {
-    const exportPlugin = hot.getPlugin('exportFile');
-    exportPlugin.downloadFile('csv', CONFIG.CSV_EXPORT);
+    try {
+        // Get data with formulas
+        const data = getCellDataWithFormulas(hot);
+        
+        // Export to CSV (formulas will be preserved as strings)
+        const csvContent = data.map(row => 
+            row.map(cell => {
+                // Properly escape and quote cells containing formulas or commas
+                if (cell && (cell.toString().includes(',') || cell.toString().startsWith('='))) {
+                    return `"${cell.replace(/"/g, '""')}"`;
+                }
+                return cell || ''; // Convert null/undefined to empty string
+            }).join(',')
+        ).join('\n');
+        
+        const blob = new Blob([csvContent], { type: CONFIG.EXPORT_SETTINGS.mimeType });
+        
+        // Create download link and trigger download
+        const fileName = CONFIG.EXPORT_SETTINGS.filename
+            .replace('[YYYY]', new Date().getFullYear())
+            .replace('[MM]', String(new Date().getMonth() + 1).padStart(2, '0'))
+            .replace('[DD]', String(new Date().getDate()).padStart(2, '0'));
+            
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `${fileName}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+    } catch (error) {
+        console.error('Export failed:', error);
+        alert('Failed to export file. Please try again.');
+    }
 });
 
 document.querySelector('#addRowButton')?.addEventListener('click', () => {
@@ -158,17 +216,31 @@ document.querySelector('#addColumnButton')?.addEventListener('click', () => {
 
 document.querySelector('#helpButton')?.addEventListener('click', showHelp);
 
-// CSV file input handler
+// Update the file input event listener
 document.querySelector('#csvFileInput')?.addEventListener('change', async (event) => {
     try {
         const file = event.target.files?.[0];
         if (!file) return;
         
-        const data = await handleCSVUpload(file);
+        // Show loading state if needed
+        const importButton = event.target.parentElement.querySelector('button');
+        const originalText = importButton.innerHTML;
+        importButton.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Loading...';
+        importButton.disabled = true;
+        
+        const data = await handleFileUpload(file);
         hot.loadData(data);
+        
+        // Reset button state
+        importButton.innerHTML = originalText;
+        importButton.disabled = false;
+        
     } catch (error) {
-        console.error('CSV upload failed:', error);
-        alert('Failed to load CSV file. Please check the file format.');
+        console.error('File upload failed:', error);
+        alert('Failed to load file. Please check the file format.');
+        
+        // Reset file input
+        event.target.value = '';
     }
 });
 
