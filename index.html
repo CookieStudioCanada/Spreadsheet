@@ -26,38 +26,44 @@
         
         <!-- Controls moved to navbar -->
         <div class="controls ms-auto">
-          <div class="button-group">
+          <div class="button-group d-flex gap-2">
             <!-- Table manipulation -->
-            <div class="btn-group btn-group-sm me-2">
-              <button id="addRowButton" class="btn btn-light">
+            <div class="btn-group btn-group-sm">
+              <button id="addRowButton" class="btn btn-light d-flex align-items-center">
                 <i class="bi bi-plus-lg me-1"></i>Row
               </button>
-              <button id="addColumnButton" class="btn btn-light">
+              <button id="addColumnButton" class="btn btn-light d-flex align-items-center">
                 <i class="bi bi-plus-lg me-1"></i>Col
               </button>
             </div>
 
-            <!-- File operations -->
-            <div class="btn-group btn-group-sm me-2">
-              <div class="file-input-wrapper">
-                <input type="file" id="csvFileInput" accept=".csv,.xlsx,.xls" />
-                <button class="btn btn-light">
-                  <i class="bi bi-upload me-1"></i>Import
-                </button>
-              </div>
-              <button id="export-file" class="btn btn-light">
-                <i class="bi bi-download me-1"></i>Export
+            <!-- File operations (now separated) -->
+            <div class="file-input-wrapper">
+              <input type="file" id="csvFileInput" accept=".csv,.xlsx,.xls" />
+              <button class="btn btn-light btn-sm d-flex align-items-center">
+                <i class="bi bi-download me-1"></i>Import
               </button>
             </div>
+            
+            <button id="export-file" class="btn btn-light btn-sm d-flex align-items-center">
+              <i class="bi bi-upload me-1"></i>Export
+            </button>
 
             <!-- Help -->
-            <button id="helpButton" class="btn btn-light btn-sm">
+            <button id="helpButton" class="btn btn-light btn-sm d-flex align-items-center">
               <i class="bi bi-question-circle me-1"></i>Help
             </button>
           </div>
         </div>
       </div>
     </nav>
+
+    <!-- Modify the formula bar div -->
+    <div class="formula-bar">
+        <div class="formula-input-wrapper">
+            <input type="text" id="formulaInput" class="formula-input" placeholder="Enter value or formula">
+        </div>
+    </div>
 
     <!-- Spreadsheet container -->  
     <div id="table"></div>
